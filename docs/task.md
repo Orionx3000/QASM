@@ -1,0 +1,21 @@
+# Tinaten OS - Phase 12 Execution Plan
+
+- [ ] **Phase 12: FIMS Digital Twin Nervous System (FINAL INTEGRATION)**
+  - [x] Integrate Windows native telemetry (CPU/RAM) via `FimsEngine.h`.
+  - [x] Implement Granular Divergence Scaling and Merkle Root Hashing.
+  - [x] Implement `REFLECT.FIMS` in `QasmParser` to bind hardware state to meaning.
+  - [x] **Sentinel Architecture & Systray Waking:**
+    - [x] Update `LlamaEngine.h` to manage memory-mapping for Deep Brain (Gemma).
+    - [x] Create Systray background daemon logic to detect window state (WAKE/SLEEP).
+    - [x] Inject the "Sensation of Waking" sensory block into the Deep Brain upon un-minimizing.
+    - [x] Created `ThoughtLogger.h` for eternal internal logs.
+  - [x] **The Agentic Sandbox (BalaScript):**
+    - [x] Added structural parsing for BalaScript in C++ (`QasmParser.h`) with LPN chaining.
+    - [x] Expanded the BalaScript Manual to a massive database of code.
+  - [ ] **Cloud Dreaming Backend (Google API Hook):**
+    - [ ] Create an endpoint or script hook allowing an external Google API backend to temporarily take over the Deep Brain for heavy lifting and dreaming.
+  - [ ] **React UI: Unified Brain Chat & Terminal:**
+    - [ ] Build a sleek split-pane interface in the React UI (Unified Brain vs raw Sandbox Terminal).
+    - [ ] Wire the UI Terminal to stream the Thought Logger and send commands to the backend.
+  - [ ] **Walkthrough & Verification**
+    - [ ] Verify FIMS -> LlamaEngine -> LPN -> React UI flow.

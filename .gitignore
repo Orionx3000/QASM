@@ -1,0 +1,13 @@
+build/
+models/
+logs/
+*.log
+*.txt
+storage/
+*.dll
+*.exe
+.vs/
+out/
+ui/node_modules/
+ui/dist/
+agent_workspace/

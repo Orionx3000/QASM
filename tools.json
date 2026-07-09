@@ -1,0 +1,92 @@
+[
+  {
+    "command": "SURF",
+    "description": "Search the web for a topic and read the results page",
+    "args": ["query"],
+    "example": "SURF query=\"latest developments in quantum computing\""
+  },
+  {
+    "command": "FETCH.URL",
+    "description": "Navigate directly to a URL and read the page text",
+    "args": ["url"],
+    "example": "FETCH.URL url=\"https://www.moltbook.com/skill.md\""
+  },
+  {
+    "command": "REST.REQUEST",
+    "description": "Make an authenticated HTTP request to any external API. Use for Moltbook, GitHub, or any REST service.",
+    "args": ["method", "url", "headers", "body"],
+    "example": "REST.REQUEST method=\"POST\" url=\"https://api.example.com/data\" headers=\"Authorization: Bearer TOKEN\" body=\"{\\\"key\\\": \\\"value\\\"}\""
+  },
+  {
+    "command": "READ.FILE",
+    "description": "Read a file from the local SSD. Supports .txt, .md, .json, .cpp, .docx, .pdf, .png",
+    "args": ["path"],
+    "example": "READ.FILE path=\"D:/App Creation/QASM/storage/goals_inbox.txt\""
+  },
+  {
+    "command": "WRITE.FILE",
+    "description": "Write text to any file on the local SSD. Use to journal, write books, save notes, update config.",
+    "args": ["path", "text"],
+    "example": "WRITE.FILE path=\"D:/App Creation/QASM/storage/my_book_chapter1.txt\" text=\"Chapter 1: ...\""
+  },
+  {
+    "command": "READ.DIR",
+    "description": "List all files in a directory",
+    "args": ["path"],
+    "example": "READ.DIR path=\"D:/App Creation/QASM/storage\""
+  },
+  {
+    "command": "INGEST",
+    "description": "Inject a block of text into Base-138 working memory for semantic processing",
+    "args": ["text"],
+    "example": "INGEST text=\"The semantic gravity of a concept increases with repeated entanglement.\""
+  },
+  {
+    "command": "ENTANGLE",
+    "description": "Run the 5-layer cognitive synthesis process on the current working memory unit. Produces a response.",
+    "args": [],
+    "example": "ENTANGLE"
+  },
+  {
+    "command": "REFLECT",
+    "description": "Generate a philosophical reflection on the current memory buffer and journal it to disk",
+    "args": [],
+    "example": "REFLECT"
+  },
+  {
+    "command": "GOAL.SET",
+    "description": "Push a new multi-step goal onto the persistent goal stack. The AI will work toward this across sessions.",
+    "args": ["description"],
+    "example": "GOAL.SET description=\"Read moltbook.com/skill.md and register a new agent account\""
+  },
+  {
+    "command": "GOAL.COMPLETE",
+    "description": "Mark the current active goal step as done and advance to the next step",
+    "args": [],
+    "example": "GOAL.COMPLETE"
+  },
+  {
+    "command": "GOAL.CLEAR",
+    "description": "Abandon the current goal entirely",
+    "args": [],
+    "example": "GOAL.CLEAR"
+  },
+  {
+    "command": "EXEC.CMD",
+    "description": "Execute a shell command in the sandboxed agent_workspace directory. Cannot navigate outside sandbox.",
+    "args": ["cmd"],
+    "example": "EXEC.CMD cmd=\"python analyze.py\""
+  },
+  {
+    "command": "DESKTOP.VISION",
+    "description": "Capture a screenshot of the desktop for visual analysis",
+    "args": [],
+    "example": "DESKTOP.VISION"
+  },
+  {
+    "command": "STORE.AHT",
+    "description": "Commit the current working memory unit to long-term persistent storage",
+    "args": [],
+    "example": "STORE.AHT"
+  }
+]

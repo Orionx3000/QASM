@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+
+:root {
+  --bg-deep: #050414;
+  --bg-panel: #110A2E;
+  --border-primary: #381B6D;
+  --text-main: #E2E8F0;
+  --text-muted: #8B7BB1;
+  
+  /* Retro New Wave Accents */
+  --accent-purple: #9D4EDD;
+  --accent-blue: #00F5FF;
+  --accent-yellow: #F9E076;
+  --accent-orange: #FF6B00;
+  
+  --sans: 'Inter', system-ui, sans-serif;
+  --mono: 'Space Mono', ui-monospace, Consolas, monospace;
+
+  font-family: var(--sans);
+  color: var(--text-main);
+  background-color: var(--bg-deep);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-image: 
+    linear-gradient(rgba(56, 27, 109, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 27, 109, 0.2) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Custom Scrollbar for retro feel */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-purple);
+}
