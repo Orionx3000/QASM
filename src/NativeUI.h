@@ -17,6 +17,39 @@ namespace qasm {
 using PostMessageFunc = std::function<void(const std::string&, const std::string&)>;
 using PostStateFunc = std::function<void(const std::string&)>;
 
+inline WNDPROC OriginalWndProc = nullptr;
+inline HWND g_MainHwnd = nullptr;
+inline NOTIFYICONDATA g_nid = {};
+
+inline LRESULT CALLBACK CustomWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    if (uMsg == WM_CLOSE) {
+        ShowWindow(hwnd, SW_HIDE);
+        return 0; // Prevent window from closing
+    }
+    
+    if (uMsg == WM_APP + 1) {
+        if (LOWORD(lParam) == WM_LBUTTONDBLCLK) {
+            ShowWindow(hwnd, SW_SHOW);
+            SetForegroundWindow(hwnd);
+        } else if (LOWORD(lParam) == WM_RBUTTONUP) {
+            POINT pt;
+            GetCursorPos(&pt);
+            SetForegroundWindow(hwnd);
+            HMENU hMenu = CreatePopupMenu();
+            InsertMenu(hMenu, 0, MF_BYPOSITION | MF_STRING, 1, "Exit QASM Engine");
+            int cmd = TrackPopupMenu(hMenu, TPM_RETURNCMD | TPM_NONOTIFY, pt.x, pt.y, 0, hwnd, NULL);
+            DestroyMenu(hMenu);
+            if (cmd == 1) {
+                Shell_NotifyIcon(NIM_DELETE, &g_nid);
+                exit(0);
+            }
+        }
+        return 0;
+    }
+    
+    return CallWindowProc(OriginalWndProc, hwnd, uMsg, wParam, lParam);
+}
+
 class NativeUI {
 public:
     static void start_window(std::shared_ptr<SemanticCores> engine, 
@@ -118,18 +151,22 @@ public:
         tracelog << "[NativeUI] Starting w.run() loop..." << std::endl;
         tracelog.close();
         
-        NOTIFYICONDATA nid = {};
-        nid.cbSize = sizeof(NOTIFYICONDATA);
-        nid.hWnd = NULL;
-        nid.uID = 1;
-        nid.uFlags = NIF_ICON | NIF_TIP;
-        nid.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(101));
-        strcpy_s(nid.szTip, "Tinaten OS / QASM Engine");
-        Shell_NotifyIcon(NIM_ADD, &nid);
+        HWND hwnd = (HWND)w.window().value();
+        g_MainHwnd = hwnd;
+        OriginalWndProc = (WNDPROC)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)CustomWndProc);
+        
+        g_nid.cbSize = sizeof(NOTIFYICONDATA);
+        g_nid.hWnd = hwnd;
+        g_nid.uID = 1;
+        g_nid.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
+        g_nid.uCallbackMessage = WM_APP + 1;
+        g_nid.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(101));
+        strcpy_s(g_nid.szTip, "Tinaten OS / QASM Engine");
+        Shell_NotifyIcon(NIM_ADD, &g_nid);
 
         w.run();
         
-        Shell_NotifyIcon(NIM_DELETE, &nid);
+        Shell_NotifyIcon(NIM_DELETE, &g_nid);
     }
 };
 
