@@ -13,6 +13,7 @@
 #include "GoalStack.h"
 #include "SubconsciousBuffer.h"
 #include "BalaScriptEngine.h"
+#include "ThoughtLogger.h"
 
 #include <fstream>
 #include <sstream>
@@ -222,6 +223,16 @@ int main() {
                                                    ", \"last_ramble_ago\": " + std::to_string(seconds_since) +
                                                    ", \"merkle_root\": \"" + qasm::FimsEngine::get_merkle_root() + "\"" +
                                                    ", \"current_action\": \"" + current_action_string + "\"" +
+                                                   ", \"neurochemistry\": {"
+                                                       "\"entropy\": "     + std::to_string(bala_engine.internal_entropy)      +
+                                                       ", \"dopamine\": "  + std::to_string(bala_engine.dopamine_level)        +
+                                                       ", \"empathy\": "   + std::to_string(bala_engine.empathy_bias)          +
+                                                       ", \"frustration\": "+ std::to_string(bala_engine.frustration_level)    +
+                                                       ", \"madness\": "   + std::to_string(bala_engine.madness_distance)     +
+                                                       ", \"in_dream\": "  + (bala_engine.in_dream_state     ? "true" : "false") +
+                                                       ", \"in_zecht\": "  + (bala_engine.in_zecht_meditation ? "true" : "false") +
+                                                       ", \"repeats\": "   + std::to_string(bala_engine.consecutive_repeats)  +
+                                                   "}" +
                                                    ", \"nodes\": " + fims_state + "}";
                             post_state_to_ui(telemetry);
                         }

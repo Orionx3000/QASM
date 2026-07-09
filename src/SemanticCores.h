@@ -87,8 +87,8 @@ public:
         
         auto vocab = llama_model_get_vocab(mc->model);
         
-        // Real LLM Inference Loop - Fixed Prompt Format to avoid token echoing
-        std::string system_prompt = "User: " + prompt + "\nAssistant: ";
+        // Real LLM Inference Loop - Use Llama 3 Chat Format to avoid hallucination
+        std::string system_prompt = "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are " + role_name + ", a core cognitive component of the Tinaten OS. Provide precise, direct answers without hallucinating markdown formatting.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n" + prompt + "<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n";
         
         std::vector<llama_token> tokens_list;
         tokens_list.resize(system_prompt.length() + 10);

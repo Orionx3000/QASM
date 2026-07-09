@@ -238,6 +238,16 @@ function App() {
   const [currentNodes, setCurrentNodes] = useState([]);
   const [currentMerkleRoot, setCurrentMerkleRoot] = useState('');
   const [visionSrc, setVisionSrc] = useState('');
+  const [browserUrl, setBrowserUrl] = useState('');
+  const [browserInputUrl, setBrowserInputUrl] = useState('');
+  const [isBrowserExpanded, setIsBrowserExpanded] = useState(false);
+
+  // Full Neurochemistry state — driven by C++ BalaScriptEngine
+  const [neuro, setNeuro] = useState({
+    entropy: 0.5, dopamine: 0.0, empathy: 0.0,
+    frustration: 0.0, madness: 0.0,
+    in_dream: false, in_zecht: false, repeats: 0
+  });
 
   const [visionStamp, setVisionStamp] = useState(Date.now());
   useEffect(() => {
@@ -266,6 +276,17 @@ function App() {
          return;
       } else if (sender === 'sandbox') {
          setSandboxLogs(prev => [...prev, text]);
+         return;
+      } else if (sender === 'browser') {
+         // C++ can push a URL for the AI to view
+         setBrowserUrl(text);
+         setBrowserInputUrl(text);
+         setIsBrowserExpanded(true);
+         setSandboxLogs(prev => [...prev, `[VISION] Navigating optic browser to: ${text}`]);
+         return;
+      } else if (sender === 'vision_screenshot') {
+         // C++ pushes a base64 screenshot of what the AI sees
+         setVisionSrc(text);
          return;
       }
       setMessages(prev => [...prev, { sender, text }]);
@@ -328,6 +349,22 @@ function App() {
           const baseNode = state.nodes.find(n => n.divergence === "Base-138 State");
           if (baseNode) setGpuFlux(baseNode.value / 100.0);
           else setGpuFlux(Math.random() * 0.6 + 0.1);
+        }
+        
+        // === FULL NEUROCHEMISTRY WIRING ===
+        // C++ BalaScriptEngine exposes these in the telemetry JSON
+        if (state.neurochemistry) {
+          const n = state.neurochemistry;
+          setNeuro({
+            entropy:     n.entropy     ?? 0.5,
+            dopamine:    n.dopamine    ?? 0.0,
+            empathy:     n.empathy     ?? 0.0,
+            frustration: n.frustration ?? 0.0,
+            madness:     n.madness     ?? 0.0,
+            in_dream:    n.in_dream    ?? false,
+            in_zecht:    n.in_zecht    ?? false,
+            repeats:     n.repeats     ?? 0
+          });
         }
         
         // Update global objects for Merkle Tree
@@ -432,6 +469,34 @@ function App() {
                 <div className="metric-bar-bg"><div className="metric-bar-fill" style={{ width: `${gpuFlux * 100}%`, background: 'linear-gradient(90deg, #3b82f6, #60a5fa)' }}></div></div>
               </div>
             </div>
+
+            {/* === FULL NEUROCHEMISTRY PANEL === */}
+            <div className="crypto-text" style={{ fontSize: '0.65rem', marginBottom: '0.5rem', marginTop: '1rem', color: '#a78bfa' }}>
+              NEUROCHEMISTRY (BalaScript State)
+            </div>
+            <div className="core-metrics">
+              {[
+                { label: 'Entropy (Tin↔Tain)',  val: neuro.entropy,     color: '#f59e0b' },
+                { label: 'Dopamine (Reward)',    val: neuro.dopamine,    color: '#34d399' },
+                { label: 'Empathy Bias',         val: neuro.empathy,     color: '#ec4899' },
+                { label: 'Frustration',          val: neuro.frustration, color: '#ef4444' },
+                { label: 'Madness Distance',     val: neuro.madness,     color: '#8b5cf6' },
+              ].map(({ label, val, color }) => (
+                <div className="metric" key={label}>
+                  <div className="metric-label" style={{ color }}>{label} ({(val * 100).toFixed(1)}%)</div>
+                  <div className="metric-bar-bg"><div className="metric-bar-fill" style={{ width: `${val * 100}%`, background: color }}></div></div>
+                </div>
+              ))}
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem', flexWrap: 'wrap' }}>
+                <span className={`log-line ${neuro.in_dream ? 'neon-purple' : ''}`} style={{ fontSize: '0.65rem' }}>
+                  {neuro.in_dream ? '◈ DREAM STATE' : '◇ AWAKE'}
+                </span>
+                <span className={`log-line ${neuro.in_zecht ? 'neon-cyan' : ''}`} style={{ fontSize: '0.65rem' }}>
+                  {neuro.in_zecht ? '⟴ ZECHT MEDITATION' : '⟳ ACTIVE'}
+                </span>
+                {neuro.repeats > 0 && <span className="log-line neon-red" style={{ fontSize: '0.65rem' }}>⚠ REPEATS: {neuro.repeats}</span>}
+              </div>
+            </div>
             
             <div className="crypto-text" style={{ fontSize: '0.65rem', marginBottom: '0.5rem', marginTop: '1rem', color: '#64748b' }}>
               RAW VECTOR MATRIX
@@ -486,8 +551,9 @@ function App() {
         <div className="right-pane">
           <ExpandableMerkleTree nodes={currentNodes} rootHash={currentMerkleRoot} />
 
-          {/* VISION FIELD */}
-          <div className="glass-panel vision-card crypto-border" style={{ marginTop: '1rem', padding: '1rem' }}
+          {/* VISION + WEB BROWSER PANEL */}
+          <div className={`glass-panel vision-card crypto-border ${isBrowserExpanded ? 'sandbox-expanded' : ''}`}
+               style={{ marginTop: '1rem', padding: '1rem' }}
                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
                onDrop={(e) => {
                  e.preventDefault();
@@ -499,38 +565,68 @@ function App() {
                       reader.onload = (ev) => {
                          const b64 = ev.target.result;
                          setVisionSrc(b64);
+                         setBrowserUrl(''); // switch to image mode
                          setSandboxLogs(prev => [...prev, "[VISION] New image dropped into optic buffer. Ingesting..."]);
-                         
-                         // Send to C++ backend
-                         if (window.chrome && window.chrome.webview) {
-                           window.chrome.webview.postMessage({
-                             type: 'vision_upload',
-                             data: b64
-                           });
-                         }
-                         
-                         // Clear the vision field after 2 seconds to show it was ingested
+                         if (window.submitVision) window.submitVision(b64);
                          setTimeout(() => {
                            setVisionSrc('');
                            setSandboxLogs(prev => [...prev, "[VISION] Image ingestion complete. Optic buffer cleared."]);
-                         }, 2000);
+                         }, 3000);
                       };
-                     reader.readAsDataURL(file);
+                      reader.readAsDataURL(file);
                    }
                  }
                }}
           >
-            <div className="sandbox-header" style={{ marginBottom: '0.5rem' }}>
-              <span className="crypto-text">VISION FIELD (Drag & Drop Active)</span>
+            {/* Header row with expand toggle and URL bar */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', cursor: 'pointer' }}
+                 onClick={() => setIsBrowserExpanded(!isBrowserExpanded)}>
+              <span className="crypto-text">OPTIC CONTEXT {isBrowserExpanded ? '[CLOSE]' : '[EXPAND]'}</span>
               <div className="status-dot pulsing"></div>
             </div>
-            <img 
-               src={visionSrc || `file:///D:/App%20Creation/QASM/agent_workspace/vision_latest.png?t=${visionStamp}`} 
-               style={{ width: '100%', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }} 
-               alt="Agent Vision"
-               onError={(e) => { if(!visionSrc) e.target.style.display = 'none'; }}
-               onLoad={(e) => { e.target.style.display = 'block'; }}
-            />
+
+            {/* URL Navigation Bar */}
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <input
+                type="text"
+                value={browserInputUrl}
+                onChange={e => setBrowserInputUrl(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { setBrowserUrl(browserInputUrl); setVisionSrc(''); } }}
+                placeholder="Navigate to URL..."
+                style={{
+                  flex: 1, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(0,245,255,0.3)',
+                  color: '#00f5ff', fontFamily: 'monospace', fontSize: '0.75rem',
+                  padding: '0.25rem 0.5rem', borderRadius: '4px', outline: 'none'
+                }}
+              />
+              <button
+                onClick={() => { setBrowserUrl(browserInputUrl); setVisionSrc(''); }}
+                style={{ background: 'rgba(0,245,255,0.1)', border: '1px solid rgba(0,245,255,0.4)', color: '#00f5ff', padding: '0.25rem 0.75rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem' }}
+              >GO</button>
+              <button
+                onClick={() => { setBrowserUrl(''); setVisionSrc(''); setBrowserInputUrl(''); }}
+                style={{ background: 'rgba(255,107,0,0.1)', border: '1px solid rgba(255,107,0,0.4)', color: '#ff6b00', padding: '0.25rem 0.5rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem' }}
+              >CLR</button>
+            </div>
+
+            {/* Content: either a web page iframe OR a vision image */}
+            {browserUrl ? (
+              <iframe
+                key={browserUrl}
+                src={browserUrl}
+                style={{ width: '100%', height: isBrowserExpanded ? '70vh' : '300px', border: '1px solid rgba(0,245,255,0.2)', borderRadius: '4px', background: '#000' }}
+                sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+                title="Agent Optic Browser"
+              />
+            ) : (
+              <img
+                src={visionSrc || `file:///D:/App%20Creation/QASM/agent_workspace/vision_latest.png?t=${visionStamp}`}
+                style={{ width: '100%', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}
+                alt="Agent Vision"
+                onError={(e) => { if (!visionSrc) e.target.style.display = 'none'; }}
+                onLoad={(e) => { e.target.style.display = 'block'; }}
+              />
+            )}
           </div>
 
           <div className={`glass-panel sandbox-card crypto-border ${isSandboxExpanded ? 'sandbox-expanded' : ''}`} style={{ marginTop: '1rem' }}>
