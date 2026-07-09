@@ -272,3 +272,20 @@ body {
 .neon-red { color: #f87171; text-shadow: 0 0 5px rgba(248, 113, 113, 0.5); }
 .neon-cyan { color: #22d3ee; text-shadow: 0 0 5px rgba(34, 211, 238, 0.5); }
 .crypto-text { letter-spacing: 1px; font-weight: bold; }
+.sandbox-expanded {
+  position: fixed !important;
+  top: 5% !important;
+  left: 5% !important;
+  width: 90vw !important;
+  height: 90vh !important;
+  border: 1px solid #00f5ff !important;
+  box-shadow: 0 0 50px rgba(0, 245, 255, 0.2) !important;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  background: rgba(0, 0, 0, 0.95);
+}
+.sandbox-expanded .terminal-logs {
+  max-height: none !important;
+  flex: 1;
+}

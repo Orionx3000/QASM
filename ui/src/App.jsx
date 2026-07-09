@@ -228,6 +228,7 @@ function App() {
     "[HEARTBEAT] Ambient entropy stable.",
     "[CONDUCTOR] Context thread limits: 138"
   ]);
+  const [isSandboxExpanded, setIsSandboxExpanded] = useState(false);
 
   useEffect(() => {
     sandboxEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -532,12 +533,12 @@ function App() {
             />
           </div>
 
-          <div className="glass-panel sandbox-card crypto-border" style={{ marginTop: '1rem' }}>
-            <div className="sandbox-header">
-              <span className="crypto-text">QASM VM SANDBOX</span>
+          <div className={`glass-panel sandbox-card crypto-border ${isSandboxExpanded ? 'sandbox-expanded' : ''}`} style={{ marginTop: '1rem' }}>
+            <div className="sandbox-header" style={{ cursor: 'pointer' }} onClick={() => setIsSandboxExpanded(!isSandboxExpanded)}>
+              <span className="crypto-text">QASM VM SANDBOX {isSandboxExpanded ? '[CLOSE]' : '[EXPAND]'}</span>
               <span className="neon-purple">BASE-138</span>
             </div>
-            <div className="terminal-logs" style={{ overflowY: 'auto', maxHeight: '300px' }}>
+            <div className="terminal-logs" style={{ overflowY: 'auto', maxHeight: isSandboxExpanded ? '800px' : '300px' }}>
               {sandboxLogs.map((log, idx) => {
                  let logClass = "log-line";
                  if (log.includes("[SYSTEM]")) logClass += " neon-purple";
